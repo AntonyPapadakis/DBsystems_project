@@ -17,7 +17,7 @@ def readSDSS():
 if __name__ == '__main__':
 
     #------------------------------------------------------
-    #read csv files and store errors to da_lines.txt
+    # read csv files and store errors to da_lines.txt
     csv.field_size_limit(500 * 1024 * 1024)  # because some rows were too big
 
     old_stderr = sys.stderr  # standard stream keep

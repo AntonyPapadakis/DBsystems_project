@@ -28,13 +28,14 @@ def map_to_vector(V, s):
 
 def ngrams_from_query(n: int, q: str, result: list):
     q = q.lower()
-    q = re.sub(r'\b[0-9]+\b|\s', ' ',
-               q)  # regular expression to replace all digits and whitespace chars but not alphanumerics
-    tokens = [token for token in q.split(" ") if token != ""]
+    q = re.sub(r'\b[0-9]+\b|\s', ' <d> ',
+               q)  # regular expression to replace all digits and whitespace chars with <d> token but not alphanumerics
+    wtokens = [wtoken for wtoken in q.split(" ") if wtoken != ""]
+    # ctokens = [ctoken for ctoken in q if ctoken != ""]
 
     for num_of_ngrams in range(2, n + 1):  # we find the most frequent ngrams up to the given n
         # getting the ngrams and storing them
-        output = list(ngrams(tokens, num_of_ngrams))  # trigrams
+        output = list(ngrams(wtokens, num_of_ngrams))  # bigrams, trigrams ...
         result.extend(output)
     return result
 
@@ -83,13 +84,15 @@ def bag_of_ngrams_get_vector(n: int, data: pd.DataFrame, vocabulary: list) -> (l
     return u, total_tokens_in_vocabulary
 
 
-def calculate_TFIDF(data: pd.DataFrame, vocabulary: list, V_counter: list, total_tokens_in_vocabulary: numpy.array):
+def calculate_TFIDF(data: pd.DataFrame, vocabulary: list, V_counter: list,
+                    total_tokens_in_vocabulary: np.array) -> np.array:
     # first calculate the normalized term frequency
     # term frequency is often divided by the total number of terms in the document as a way of normalization
     # in our case instead of documents we have our query vocabulary and our representation vectors
 
     # basically the frequency of a token in a query is the corresponding value of its representation vector
-
+    rep_vectors = np.zeros((data.shape[0], len(vocabulary)))
+    counter = 0  # counter used to insert the tfidf representation vector to the object to be returned
     for rv in data.representation_vector:
         np.seterr(divide='ignore')
         # normalized term frequency
@@ -104,5 +107,10 @@ def calculate_TFIDF(data: pd.DataFrame, vocabulary: list, V_counter: list, total
 
         # TFIDF
         tfidf = tf * idf
-        print(tfidf)
         np.seterr(divide='warn')
+
+        # insert rep vector to the numpy array
+        rep_vectors[counter][:] = tfidf[:]
+        counter += 1
+
+    return rep_vectors

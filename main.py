@@ -3,6 +3,10 @@ import pandas as pd
 import csv
 import analysis as an
 import methods
+from matplotlib import pyplot as plt
+import sys
+
+plt.style.use('dark_background')
 
 
 def read_SQL_share():
@@ -19,39 +23,81 @@ def readSDSS():
 
 
 if __name__ == '__main__':
+
+    print(f"Arguments count: {len(sys.argv)}")
+    repr_level = ""
+    dataset = ""
+    dir_load = ""
+    count_args = 0
+    for arg in sys.argv:
+        if arg == "-r":  # argument flag for representation level char or word
+            repr_level = sys.argv[count_args + 1].strip().lower()
+        elif arg == "-d":  # argument flag for dataset to be used
+            dataset = sys.argv[count_args + 1].strip().lower()
+        elif arg == "-f":  # argument flag for folder containing vector representation to be loaded
+            dir_load = sys.argv[count_args + 1].strip()
+        count_args += 1
+
     # ------------------------------------------------------
     # read csv files and store errors to da_lines.txt
     csv.field_size_limit(500 * 1024 * 1024)  # because some rows were too big
 
+    if dataset == "":
+        input_not_ok = True
+        user_input = ''
+        while input_not_ok:
+            user_input = input(
+                "Please state the dataset you want to use: \nType sdss or sqlshare for the respective dataset\n")
+            user_input = user_input.strip().lower()
+
+            if "sdss" in user_input or "sqlshare" in user_input:
+                input_not_ok = False
+
+        dataset = user_input
+
+    if "sdss" in dataset:
+        data = readSDSS()
+    elif "sqlshare" in dataset:
+        data = read_SQL_share()
+    else:
+        sys.exit(1)
+
+    if repr_level == "":
+        input_not_ok = True
+        user_input = ''
+        while input_not_ok:
+            user_input = input(
+                "Please state if you want word level or character level representations to be used: \nType word or char "
+                "for the respective dataset\n")
+            user_input = user_input.strip().lower()
+
+            if "word" in user_input or "char" in user_input:
+                input_not_ok = False
+
+        repr_level = user_input
+        print(user_input)
+    if "char" not in repr_level and "word" not in repr_level:
+        sys.exit(2)
+
+    print("dataset: ", dataset, "\nfile containing the representation TFIDF vectors: ", dir_load,
+          "\nRepresentation level", repr_level)
     print("------------------------ Begining to load the dataset ----------------------------------\n ")
 
-    # data = read_SQL_share()
-    data = readSDSS()
-    a = data.head(10)
+    # query workload analysis
+    # workload_an = an.Analiser(data)
+    # workload_an.analisis(data)
 
     print("------------------------ dataset loaded-------------------------------------------------\n ")
 
-    V, V_counter = methods.bag_of_ngrams_Vocabulary(5, data)
-    u, total_tokens_in_vocabulary = methods.bag_of_ngrams_get_vector(5, data.loc[16458:16467,:], V)
+    # simple baselines
+    # methods.baselines(data)
 
-    # create a column made out of the representation vectors
-    representation_vector = pd.Series(u)
-    a.insert(5, "representation_vector", representation_vector.values)
+    # traditional model
+    # methods.traditional_model(data, dataset, repr_level, dir_load)
 
-    # get the error labels
-    Y_error = data.error.values
-    if 1 not in Y_error:
-        print("nooo")
-    else:
-        print("yesss")
-        print(np.where(Y_error == 1))
+    # LSTM model
+    regress = True
+    methods.neural_net_methods(data, regress, "lstm", repr_level)
 
-    # print(data.head(10), "\n")
-    X = methods.calculate_TFIDF(a, V, V_counter, total_tokens_in_vocabulary)
-    print("a\n",len(X),Y_error[16458:16461],"aa\n")
-    from sklearn.linear_model import LogisticRegression
-
-    clf = LogisticRegression(multi_class='ovr', random_state=0).fit(X, Y_error[16458:16468])
-    print("\n",clf.score(X, Y_error[16458:16468]))
-    # workload_an = an.Analiser(data)
-    # workload_an.analisis(data)
+    # CNN model
+    # methods.neural_net_methods(data, regress, "cnn", repr_level)

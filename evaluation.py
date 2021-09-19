@@ -93,6 +93,19 @@ if __name__ == '__main__':
         else:
             model_type = model_type + " sqlshare error classification"
 
+        if model_type != "":
+            print("ok")
+            unique_elements, counts_elements = np.unique(Y_test, return_counts=True)
+            mfreq_index = np.where(counts_elements.max() == counts_elements)  # most frequent
+            mfreq_error = unique_elements[mfreq_index][0]
+            print(mfreq_error)
+
+            temp = np.zeros(len(Y_test))
+            for i in range(len(temp)):
+                temp[i] = mfreq_error
+            Y_pred = temp
+
+
         print("Given model type is:", model_type, "\nmodel name: ", model_path)
 
         acc = accuracy_score(Y_test, Y_pred)
@@ -114,6 +127,17 @@ if __name__ == '__main__':
             model_type = model_type + " sdss regression"
         else:
             model_type = model_type + " sqlshare regression"
+            
+        if model_type !="":
+                # median value for regression problems
+                # CPU time busy problem
+                median_val = np.median(Y_test)
+                print("median cpu time: ", median_val, "\n")
+
+                temp = np.zeros(len(Y_test))
+                for i in range(len(temp)):
+                    temp[i] = median_val
+                Y_pred = temp
 
         print("Given model type is:", model_type, "\nmodel name: ", model_path)
 
@@ -124,3 +148,7 @@ if __name__ == '__main__':
         print(model_type, "- Mean Squared Error score: ", mse)
         print(model_type, "- Explained Variance score: ", ev)
         print(model_type, "- Max Error score: ", me)
+
+
+
+

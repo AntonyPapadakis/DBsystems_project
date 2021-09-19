@@ -28,6 +28,9 @@ number_of_predicate_table_names = 0
 # subqueries
 subqueries = 0
 
+# counts nest level
+nest_level = 0
+
 
 # Translates a node_type ID into a string
 def translate_node_type(node_type):
@@ -87,17 +90,44 @@ class Analiser(pd.DataFrame):
     def analisis(self, data):
 
         rows, cols = data.shape
+        num_of_chars, num_of_words, num_of_joins, r_subqueries, r_num_of_function_calls, r_number_of_unique_table_names, r_number_of_predicates, r_number_of_predicate_table_names, r_number_of_selected_columns, r_nested_aggregation = ( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
         for r in range(0, rows):
-            print(r)
+            #print(r)
             # q = "SELECT * FROM students WHERE GPA > (SELECT AVG(GPA) FROM students WHERE AGE < (SELECT MAX(AGE) FROM students) );"
             q = data.statement[r]
-            print(q)
-            self.analise_all(q)
+            #print(q)
+            check = self.analise_all(q)
+            if check is not None: # not queries message will be printed
+                a, b, c, d, e, f, g, h, i, j = check
+            else:
+                continue
+
+            num_of_chars += a
+            num_of_words += b
+            num_of_joins += c
+            r_subqueries += d
+            r_num_of_function_calls += e
+            r_number_of_unique_table_names += f
+            r_number_of_predicates += g
+            r_number_of_predicate_table_names += h
+            r_number_of_selected_columns += i
+            r_nested_aggregation += j
+
+        # print analisis results
+        print("num of chars: ", num_of_chars, "\nnum of words: ", num_of_words,
+              "\nnum of function calls",
+              r_num_of_function_calls, "\nnum of joins: ", num_of_joins, "\nnum of unique table names: ",
+              r_number_of_unique_table_names,
+              "\nnum of selected columns: ", r_number_of_selected_columns,
+              "\nnum of predicates: ", r_number_of_predicates, "\nnumber of predicate table names: ",
+              r_number_of_predicate_table_names,
+              "\nnumber of subqueries: ", r_subqueries, "\nnested aggregation: ", r_nested_aggregation,flush=True)
 
     def analise_all(self, q, parent=True):
         """
         this function performs the query analisis i.e. number of words, joins, functions etc.
+        created by Antonis Papadakis
         :param q: this is the query to be analised
         :param parent: this is the parameter that checks if we are checking the parent query or a left or right node in
         it
@@ -234,14 +264,17 @@ class Analiser(pd.DataFrame):
                 # subquery aggregation
                 if parent:
                     global nested_aggregation
-                    print("num of chars: ", num_of_chars, "\nnum of words: ", num_of_words,
-                          "\nnum of function calls",
-                          num_of_function_calls, "\nnum of joins: ", num_of_joins, "\nnum of unique table names: ",
-                          number_of_unique_table_names,
-                          "\nnum of selected columns: ", number_of_selected_columns,
-                          "\nnum of predicates: ", number_of_predicates, "\nnumber of predicate table names: ",
-                          number_of_predicate_table_names,
-                          "\nnumber of subqueries: ", subqueries, "\nnested aggregation: ", nested_aggregation)
+
+                    r_subqueries = subqueries
+                    r_num_of_function_calls = num_of_function_calls
+                    r_number_of_unique_table_names = number_of_unique_table_names
+                    r_number_of_predicates = number_of_predicates
+                    r_number_of_predicate_table_names = number_of_predicate_table_names
+                    r_number_of_selected_columns = number_of_selected_columns
+                    if nested_aggregation == True:
+                        r_nested_aggregation = 1
+                    else:
+                        r_nested_aggregation = 0
 
                     sub_count = 0
                     subqueries = 0
@@ -251,5 +284,8 @@ class Analiser(pd.DataFrame):
                     number_of_predicate_table_names = 0
                     number_of_selected_columns = 0
                     nested_aggregation = False
-            else:
-                print("There is no query in this entry\n")
+
+                    return num_of_chars, num_of_words, num_of_joins, r_subqueries, r_num_of_function_calls,r_number_of_unique_table_names,r_number_of_predicates, r_number_of_predicate_table_names,r_number_of_selected_columns, r_nested_aggregation
+
+        else:
+            print("There is no query in this entry\n")

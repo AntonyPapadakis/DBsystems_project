@@ -1,19 +1,20 @@
+import tensorflow as tf
 import pandas as pd
 import re
 from nltk.util import ngrams
 from collections import Counter
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split, cross_val_score
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Embedding, LSTM, GlobalMaxPooling1D, SpatialDropout1D, Conv1D, MaxPooling1D, \
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Embedding, LSTM, GlobalMaxPooling1D, SpatialDropout1D, Conv1D, \
+    MaxPooling1D, \
     Flatten
 from sklearn.linear_model import HuberRegressor
-from sklearn import preprocessing
 from numpy import save, load
 import sys
 import joblib
@@ -184,6 +185,16 @@ def logistic_regression_classification(X_train, X_test, Y_train, Y_test, repr_le
     joblib.dump(error_classifier, filename)
 
 
+def regression(b: float, values: np.array):
+    keep_values = values  # values before normalization
+    np.add.at(values, [*range(0, len(values))], b)
+    values = np.divide(values, keep_values.max() - keep_values.min())
+    # replace NaN values
+    CPU_time = np.nan_to_num(values, nan=0)
+    Y = np.log(CPU_time)
+    return Y
+
+
 def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_load: str):
     if dir_load == "":
         input_not_ok = True
@@ -194,8 +205,8 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
                 "data file saved in the current directory)\nType yes or no for the respective answer\n")
             user_input = user_input.strip().lower()
 
-        if user_input == "yes" or user_input == "no":
-            input_not_ok = False
+            if user_input == "yes" or user_input == "no":
+                input_not_ok = False
 
         answer = user_input
         dir_load = ""
@@ -207,6 +218,11 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
     if "no" in answer:
 
         V, V_counter, ngrams_per_query = bag_of_ngrams_Vocabulary(5, data, repr_level)
+
+        import pickle
+        open_file = open("vocabulary", "rb")
+        V = pickle.load(open_file)
+        open_file.close()
         u, total_tokens_in_vocabulary = bag_of_ngrams_get_vector(V, ngrams_per_query)
 
         # create a column made out of the representation vectors
@@ -232,9 +248,21 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 
     # get the error labels
     Y_error = data.error.values
+    count1 = 0
+    count11 = 0
 
+    for i in range(0, len(Y_error)):
+        if Y_error[i] == -1:
+            count1 += 1
+        elif Y_error[i] == 1:
+            count11 += 1
+    print(count1)
+    print(count11)
     # classification split
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y_error, test_size=0.1, random_state=5)
+
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y_error, test_size=0.03, random_state=5)
+    save(repr_level+'X_test_forerror' + dataset + '.npy', X)
+    save(repr_level+'Y_test_forerror' + dataset + '.npy', Y_error)
 
     # train model for the error prediction - classification problem
     start = time.time()
@@ -253,14 +281,13 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 
     b = epsilon - data.busy.values.min()
     CPU_time = data.busy.values
-    np.add.at(CPU_time, [*range(0, len(CPU_time))], b)
-    CPU_time = np.divide(CPU_time, data.busy.values.max() - data.busy.values.min())
-    # replace NaN values
-    CPU_time = np.nan_to_num(CPU_time, nan=0)
-    Y_cpu = np.log(CPU_time)
+    Y_cpu = regression(b, CPU_time)
 
     # cpu time regression split
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y_cpu, test_size=0.1, random_state=6)
+    save(repr_level + 'X_test_forcpu' + dataset + '.npy', X_test)
+    save(repr_level + 'Y_test_forcpu' + dataset + '.npy', Y_test)
+
     huber_cpu = HuberRegressor(max_iter=200, tol=1e-3)
     scores = cross_val_score(huber_cpu, X_train, Y_train, cv=5)
     print("\nhuber cpu crossval scores", scores)
@@ -281,14 +308,13 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 
     b = epsilon - data.rows.values.min()
     Ans_size = data.rows.values
-    np.add.at(Ans_size, [*range(0, len(Ans_size))], b)
-    Ans_size = np.divide(Ans_size, data.rows.values.max() - data.rows.values.min())
-    # replace NaN values
-    Ans_size = np.nan_to_num(Ans_size, nan=0)
-    Y_answer = np.log(Ans_size)
+    Y_answer = regression(b, Ans_size)
 
     # answer size regression split
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y_answer, test_size=0.1, random_state=7)
+    save(repr_level + 'X_test_foranssize' + dataset + '.npy', X_test)
+    save(repr_level + 'Y_test_foranssize' + dataset + '.npy', Y_test)
+
     huber_ans_size = HuberRegressor(max_iter=200, tol=1e-3)
     scores = cross_val_score(huber_ans_size, X_train, Y_train, cv=5)
     print("\nhuber answer size crossval scores", scores)
@@ -306,6 +332,13 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 
 def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, token_level: str) -> (np.array, np.array):
     Y_error = data.error.values
+
+    if -1 in Y_error:
+        print("there is a -1")
+        Y_error = np.where(Y_error == -1, 2, Y_error)  # give value 2 to -1 errors
+
+    if "success" in Y_error[:]:  # aka when we have loaded the sqlshare dataset
+        Y_error = np.where(Y_error == "success", 1, 0)
 
     max_words = 1500
     if "word" in token_level:
@@ -329,9 +362,6 @@ def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, toke
     X_train = pad_sequences(X_train, maxlen=max_phrase_len)
     Y_train = to_categorical(Y_error)
 
-    print(X_train.shape, " ", Y_train.shape)
-    print(X_train, "\n", Y_train)
-
     # accordingly shape the input shape
     X_train = np.asarray(X_train)
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
@@ -339,21 +369,20 @@ def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, toke
     return X_train, Y_train
 
 
-def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_level: str):
+def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_level: str, dataset: str):
     # clean values
-    X_train = data.statement.values
-    print(X_train.shape[0])
-    X_train, Y_train = preprocess_for_neural_net_models(data, X_train, token_level)
+    X = data.statement.values
+    X, Y = preprocess_for_neural_net_models(data, X, token_level)
 
-    input_sh = (X_train.shape[1], 1)
+    input_sh = (X.shape[1], 1)
 
     batch_size = 32
-    epochs = 2
+    epochs = 10
 
     model = Sequential()
 
     if "lstm" in net_type:
-        X_train = X_train.astype(np.float)
+        X = X.astype(np.float)
 
         # model_lstm.add(Embedding(input_dim=max_words, input_length=X_train.shape[1], output_dim=32))
 
@@ -373,9 +402,9 @@ def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_l
         model.add(Dropout(0.3))
 
     if regress:
-        model.add(Dense(1, activation='linear'))
+        model.add(Dense(1, activation='linear'))  # linear unit for regression value calculation
     else:
-        model.add(Dense(2, activation='sigmoid'))
+        model.add(Dense(3, activation='softmax'))  # ok - severe error - non severe error
 
     if regress:
 
@@ -390,12 +419,8 @@ def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_l
 
                 b = epsilon - data.busy.values.min()
                 CPU_time = data.busy.values
-                np.add.at(CPU_time, [*range(0, len(CPU_time))], b)
-                CPU_time = np.divide(CPU_time, data.busy.values.max() - data.busy.values.min())
-                # replace NaN values
-                CPU_time = np.nan_to_num(CPU_time, nan=0)
-                Y_cpu = np.log(CPU_time)
-                Y_train = Y_cpu
+                Y_cpu = regression(b, CPU_time)
+                Y = Y_cpu
 
             else:
                 # ---------------------------------------------------------------------------------------------------
@@ -404,25 +429,63 @@ def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_l
 
                 b = epsilon - data.rows.values.min()
                 Ans_size = data.rows.values
-                np.add.at(Ans_size, [*range(0, len(Ans_size))], b)
-                Ans_size = np.divide(Ans_size, data.rows.values.max() - data.rows.values.min())
-                # replace NaN values
-                Ans_size = np.nan_to_num(Ans_size, nan=0)
-                Y_answer = np.log(Ans_size)
-                Y_train = Y_answer
+                Y_answer = regression(b, Ans_size)
+                Y = Y_answer
 
             model.compile(loss='huber_loss', optimizer='Adam', metrics=["mean_squared_error"])
+
+            my_callbacks = [
+                tf.keras.callbacks.EarlyStopping(patience=1),
+                tf.keras.callbacks.ModelCheckpoint(filepath="case" + str(
+                    case) + "_" + token_level + "_" + dataset + "_" + net_type + "_dataset_cpu_time" + 'model.{epoch:02d}-{val_loss:.2f}.h5'),
+                tf.keras.callbacks.TensorBoard(log_dir='./logs'),
+            ]
+
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10)
+
+            if case == 0:
+                save(net_type + "_" + token_level + 'X_test_forcpu' + dataset + '.npy', X_test)
+                save(net_type + "_" + token_level + 'Y_test_forcpu' + dataset + '.npy', Y_test)
+            else:
+                save(net_type + "_" + token_level + 'X_test_foranssize' + dataset + '.npy', X_test)
+                save(net_type + "_" + token_level + 'Y_test_foranssize' + dataset + '.npy', Y_test)
+
             start = time.time()
-            history = model.fit(X_train, Y_train, validation_split=0.1, epochs=2, batch_size=batch_size)
+            history = model.fit(X_train, Y_train, validation_split=0.1, epochs=epochs, batch_size=batch_size,
+                                callbacks=my_callbacks)
             end = time.time()
 
             if case == 0:
-                print("\n", token_level, " ", net_type, " Regression for cpu time model", "time is: ", end - start)
+                model.save(token_level + "_" + dataset + "_" + net_type + "_dataset_cpu_time" + ".h5")
+                model.save(token_level + "_" + net_type + "_dataset_cpu_time")
+
+                print("\n", token_level, " ", net_type, "_", dataset, " Regression for cpu time model", "time is: ",
+                      end - start)
             else:
-                print("\n", token_level, " ", net_type, " Regression for answer size model", "time is: ", end - start)
-    else:
-        model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accuracy'])
+                model.save(token_level + "_" + dataset + "_" + net_type + "_dataset_answer_size" + ".h5")
+                model.save(token_level + "_" + net_type + "_dataset_answer_size")
+
+                print("\n", token_level, " ", net_type, "_", dataset, " Regression for answer size model", "time is: ",
+                      end - start)
+    elif "sdss" in dataset:
+
+        print("herere")
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1)
+        save(net_type + "_" + token_level + 'X_test_forerror' + dataset + '.npy', X_test)
+        save(net_type + "_" + token_level + 'Y_test_forerror' + dataset + '.npy', Y_test)
+
+        my_callbacks = [
+            tf.keras.callbacks.EarlyStopping(patience=2),
+            # tf.keras.callbacks.ModelCheckpoint(
+            #   filepath=token_level + "_" + dataset + "_" + net_type + "_dataset_error" + 'model.{epoch:02d}-{val_loss:.2f}.h5'),
+            tf.keras.callbacks.TensorBoard(log_dir='./logs'),
+        ]
+
+        model.compile(loss='categorical_crossentropy', optimizer='Adam', metrics=['accuracy'])
         start = time.time()
-        history = model.fit(X_train, Y_train, validation_split=0.1, epochs=2, batch_size=batch_size)
+        history = model.fit(X_train, Y_train, validation_split=0.1, epochs=epochs, batch_size=batch_size,
+                            callbacks=my_callbacks)
         end = time.time()
+        model.save(token_level + "_" + dataset + "_" + net_type + "_dataset_error" + ".h5")
+
         print("\n", token_level, " ", net_type, " Classification for query error prediction", "time is: ", end - start)

@@ -1,0 +1,43 @@
+SDSS - word models run
+
+run evaluation.py -x model_test_vectors/sdss/word/cnn_wordX_test_forerrorsdss.npy -y model_test_vectors/sdss/word/cnn_wordY_test_forerrorsdss.npy -f models/sdss/word/word_sdss_cnn_dataset_error.h5
+run evaluation.py -x model_test_vectors/sdss/word/cnn_wordX_test_foranssizesdss.npy -y model_test_vectors/sdss/word/cnn_wordY_test_foranssizesdss.npy -f models/sdss/word/word_sdss_cnn_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sdss/word/cnn_wordX_test_forcpusdss.npy -y model_test_vectors/sdss/word/cnn_wordY_test_forcpusdss.npy -f models/sdss/word/word_sdss_cnn_dataset_cpu_time.h5
+run evaluation.py -x model_test_vectors/sdss/word/wordX_test_forerrorsdss.npy -y model_test_vectors/sdss/word/wordY_test_forerrorsdss.npy -f models/sdss/word/word_sdss_LogReg_error_classifier.sav
+run evaluation.py -x model_test_vectors/sdss/word/wordX_test_foranssizesdss.npy -y model_test_vectors/sdss/word/wordY_test_foranssizesdss.npy -f models/sdss/word/word_sdss_huber_regressor_answer_size.sav
+run evaluation.py -x model_test_vectors/sdss/word/wordX_test_forcpusdss.npy -y model_test_vectors/sdss/word/wordY_test_forcpusdss.npy -f models/sdss/word/word_sdss_huber_regressor_cpu.sav
+run evaluation.py -x model_test_vectors/sdss/word/lstm_wordX_test_foranssizesdss.npy -y model_test_vectors/sdss/word/lstm_wordY_test_foranssizesdss.npy -f models/sdss/word/word_sdss_lstm_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sdss/word/cnn_wordX_test_forerrorsdss.npy -y model_test_vectors/sdss/word/cnn_wordY_test_forerrorsdss.npy -f models/sdss/word/word_sdss_lstm_dataset_error.h5
+run evaluation.py -x model_test_vectors/sdss/word/lstm_wordX_test_forcpusdss.npy -y model_test_vectors/sdss/word/lstm_wordY_test_forcpusdss.npy -f models/sdss/word/word_sdss_lstm_dataset_cpu_time.h5
+
+SDSS - char models run
+
+run evaluation.py -x model_test_vectors/sdss/char/cnn_charX_test_foranssizesdss.npy -y model_test_vectors/sdss/char/cnn_charY_test_foranssizesdss.npy  -f models/sdss/char/char_sdss_cnn_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sdss/char/cnn_charX_test_forcpusdss.npy -y model_test_vectors/sdss/char/cnn_charY_test_forcpusdss.npy -f models/sdss/char/char_sdss_cnn_dataset_cpu_time.h5
+run evaluation.py -x model_test_vectors/sdss/char/cnn_charX_test_forerrorsdss.npy -y model_test_vectors/sdss/char/cnn_charY_test_forerrorsdss.npy -f models/sdss/char/char_sdss_cnn_dataset_error.h5
+run evaluation.py -x model_test_vectors/sdss/char/charX_test_foranssizesdss.npy -y model_test_vectors/sdss/char/charY_test_foranssizesdss.npy -f models/sdss/char/char_sdss_huber_regressor_answer_size.sav
+run evaluation.py -x model_test_vectors/sdss/char/charX_test_forcpusdss.npy -y model_test_vectors/sdss/char/charY_test_forcpusdss.npy -f models/sdss/char/char_sdss_huber_regressor_cpu.sav
+run evaluation.py -x model_test_vectors/sdss/char/charX_test_forerrorsdss.npy -y model_test_vectors/sdss/char/charY_test_forerrorsdss.npy -f models/sdss/char/char_sdss_LogReg_error_classifier.sav
+run evaluation.py -x model_test_vectors/sdss/char/lstm_charX_test_foranssizesdss.npy -y model_test_vectors/sdss/char/lstm_charY_test_foranssizesdss.npy -f models/sdss/char/char_sdss_lstm_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sdss/char/lstm_charX_test_forcpusdss.npy -y model_test_vectors/sdss/char/lstm_charY_test_forcpusdss.npy -f models/sdss/char/char_sdss_lstm_dataset_cpu_time.h5
+run evaluation.py -x model_test_vectors/sdss/char/lstm_charX_test_forerrorsdss.npy -y model_test_vectors/sdss/char/lstm_charY_test_forerrorsdss.npy -f models/sdss/char/char_sdss_lstm_dataset_error.h5
+
+SQLshare - word models run
+
+run evaluation.py -x model_test_vectors/sqlshare/word/lstm_wordX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/word/cnn_wordY_test_foranssizesqlshare.npy -f models/sqlshare/word/word_sqlshare_cnn_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sqlshare/word/cnn_wordX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/word/cnn_wordY_test_forcpusqlshare.npy -f models/sqlshare/word/word_sqlshare_cnn_dataset_cpu_time.h5
+run evaluation.py -x model_test_vectors/sqlshare/word/wordX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/word/wordY_test_foranssizesqlshare.npy -f models/sqlshare/word/word_sqlshare_huber_regressor_answer_size.sav
+run evaluation.py -x model_test_vectors/sqlshare/word/wordX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/word/wordY_test_forcpusqlshare.npy -f models/sqlshare/word/word_sqlshare_huber_regressor_cpu.sav
+run evaluation.py -x model_test_vectors/sqlshare/word/lstm_wordX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/word/lstm_wordY_test_foranssizesqlshare.npy -f models/sqlshare/word/word_sqlshare_lstm_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sqlshare/word/lstm_wordX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/word/lstm_wordY_test_forcpusqlshare.npy -f models/sqlshare/word/word_sqlshare_lstm_dataset_cpu_time.h5
+
+SQLshare - char models run
+
+run evaluation.py -x model_test_vectors/sqlshare/char/cnn_charX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/char/cnn_charY_test_foranssizesqlshare.npy -f models/sqlshare/char/char_sqlshare_cnn_dataset_answer_size.h5
+run evaluation.py -x model_test_vectors/sqlshare/char/cnn_charX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/char/cnn_charY_test_forcpusqlshare.npy -f models/sqlshare/char/char_sqlshare_cnn_dataset_cpu_time.h5
+run evaluation.py -x model_test_vectors/sqlshare/char/charX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/char/charY_test_foranssizesqlshare.npy -f models/sqlshare/char/char_sqlshare_huber_regressor_answer_size.sav
+run evaluation.py -x model_test_vectors/sqlshare/char/charX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/char/charY_test_forcpusqlshare.npy -f models/sqlshare/char/char_sqlshare_huber_regressor_cpu.sav
+run evaluation.py -x model_test_vectors/sqlshare/char/cnn_charX_test_foranssizesqlshare.npy -y model_test_vectors/sqlshare/char/cnn_charY_test_foranssizesqlshare.npy -f models/sqlshare/char/char_sqlshare_lstm_dataset_answer_size.h5 # problems due to short memory
+run evaluation.py -x model_test_vectors/sqlshare/char/cnn_charX_test_forcpusqlshare.npy -y model_test_vectors/sqlshare/char/cnn_charY_test_forcpusqlshare.npy -f models/sqlshare/char/char_sqlshare_lstm_dataset_cpu_time.h5  # problems due to short memory
+
+

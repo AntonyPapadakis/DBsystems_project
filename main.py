@@ -54,6 +54,7 @@ if __name__ == '__main__':
                 input_not_ok = False
 
         dataset = user_input
+    print("------------------------ Begining to load the dataset ----------------------------------\n ")
 
     if "sdss" in dataset:
         data = readSDSS()
@@ -61,6 +62,14 @@ if __name__ == '__main__':
         data = read_SQL_share()
     else:
         sys.exit(1)
+
+    print("------------------------ dataset loaded-------------------------------------------------\n ")
+
+
+    # query workload analysis
+    workload_an = an.Analiser(data)
+    workload_an.analisis(data)
+
 
     if repr_level == "":
         input_not_ok = True
@@ -81,23 +90,23 @@ if __name__ == '__main__':
 
     print("dataset: ", dataset, "\nfile containing the representation TFIDF vectors: ", dir_load,
           "\nRepresentation level", repr_level)
-    print("------------------------ Begining to load the dataset ----------------------------------\n ")
 
-    # query workload analysis
-    # workload_an = an.Analiser(data)
-    # workload_an.analisis(data)
 
-    print("------------------------ dataset loaded-------------------------------------------------\n ")
 
     # simple baselines
-    # methods.baselines(data)
+    methods.baselines(data)
 
     # traditional model
-    # methods.traditional_model(data, dataset, repr_level, dir_load)
+    methods.traditional_model(data.head(90000), dataset, repr_level, dir_load)
 
     # LSTM model
-    regress = True
-    methods.neural_net_methods(data, regress, "lstm", repr_level)
+    regress = True #use this as True when you want to perform regression operations
+    methods.neural_net_methods(data, regress, "lstm", repr_level, dataset)
+    regress = False #use this as True when you want to perform regression operations
+    methods.neural_net_methods(data, regress, "lstm", repr_level, dataset)
 
     # CNN model
-    # methods.neural_net_methods(data, regress, "cnn", repr_level)
+    regress = True #use this as True when you want to perform regression operations
+    methods.neural_net_methods(data, regress, "cnn", repr_level, dataset)
+    regress = False #use this as True when you want to perform regression operations
+    methods.neural_net_methods(data, regress, "cnn", repr_level, dataset)

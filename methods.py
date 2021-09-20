@@ -359,6 +359,7 @@ def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, toke
 
     tokenizer.fit_on_texts(X_train)
     X_train = tokenizer.texts_to_sequences(X_train)
+    vocab_size = len(tokenizer.word_index) + 1
     X_train = pad_sequences(X_train, maxlen=max_phrase_len)
     Y_train = to_categorical(Y_error)
 
@@ -366,25 +367,26 @@ def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, toke
     X_train = np.asarray(X_train)
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
 
-    return X_train, Y_train
+    return X_train, Y_train,vocab_size,max_phrase_len
 
 
 def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_level: str, dataset: str):
     # clean values
     X = data.statement.values
-    X, Y = preprocess_for_neural_net_models(data, X, token_level)
+    X, Y,vocab_size,max_phrase_len = preprocess_for_neural_net_models(data, X, token_level)
 
     input_sh = (X.shape[1], 1)
 
     batch_size = 32
     epochs = 10
+    max_words = 1500
 
     model = Sequential()
 
     if "lstm" in net_type:
         X = X.astype(np.float)
 
-        # model_lstm.add(Embedding(input_dim=max_words, input_length=X_train.shape[1], output_dim=32))
+        # model_cnn.add(Embedding(vocab_size, 100, input_length=max_phrase_len))
 
         model.add(LSTM(32, return_sequences=True, input_shape=input_sh))
         model.add(LSTM(16, return_sequences=True, ))
@@ -392,7 +394,8 @@ def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_l
     else:
         model_cnn = Sequential()
 
-        # model_cnn.add(Embedding(input_dim=max_words, input_length=X_train.shape[1], output_dim=32))
+        # model_cnn.add(Embedding(vocab_size, 100, input_length=max_phrase_len))
+        # if embedings are added change input of CNN layer to (1721,1)
 
         model.add(Conv1D(input_shape=input_sh, filters=32, kernel_size=10, activation='relu'))
         model.add(MaxPooling1D(pool_size=5))
@@ -469,7 +472,6 @@ def neural_net_methods(data: pd.DataFrame, regress: bool, net_type: str, token_l
                       end - start)
     elif "sdss" in dataset:
 
-        print("herere")
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1)
         save(net_type + "_" + token_level + 'X_test_forerror' + dataset + '.npy', X_test)
         save(net_type + "_" + token_level + 'Y_test_forerror' + dataset + '.npy', Y_test)

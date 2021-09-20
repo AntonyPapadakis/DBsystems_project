@@ -4,6 +4,7 @@ from numpy import save, load
 import joblib
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, explained_variance_score, \
     mean_squared_error, max_error
+from sklearn.metrics import r2_score
 
 if __name__ == '__main__':
     """
@@ -144,10 +145,12 @@ if __name__ == '__main__':
         ev = explained_variance_score(Y_test, Y_pred)
         mse = mean_squared_error(Y_test, Y_pred)
         me = max_error(Y_test, Y_pred)
+        r2 = r2_score(Y_test, Y_pred)
 
         print(model_type, "- Mean Squared Error score: ", mse)
         print(model_type, "- Explained Variance score: ", ev)
         print(model_type, "- Max Error score: ", me)
+        print(model_type, "- R2 score: ", me)
 
 
 

@@ -61,14 +61,17 @@ if __name__ == '__main__':
     elif "sqlshare" in dataset:
         data = read_SQL_share()
     else:
+        print("Please specify the dataset to be used. It must be either sqlshare or sdss\n")
         sys.exit(1)
 
     print("------------------------ dataset loaded-------------------------------------------------\n ")
 
 
     # query workload analysis
-    workload_an = an.Analiser(data)
-    workload_an.analisis(data)
+    print("------------------------workload analysis begins-----------------------------------------")
+    #workload_an = an.Analiser(data)
+    #workload_an.analisis(data)
+    print("------------------------workload analysis finished-----------------------------------------")
 
 
     if repr_level == "":
@@ -86,6 +89,7 @@ if __name__ == '__main__':
         repr_level = user_input
         print(user_input)
     if "char" not in repr_level and "word" not in repr_level:
+        print("Please specify the representation level to be used. Accepted answers are char and word\n")
         sys.exit(2)
 
     print("dataset: ", dataset, "\nfile containing the representation TFIDF vectors: ", dir_load,
@@ -94,10 +98,10 @@ if __name__ == '__main__':
 
 
     # simple baselines
-    methods.baselines(data)
+    methods.baselines(data, dataset)
 
     # traditional model
-    methods.traditional_model(data.head(90000), dataset, repr_level, dir_load)
+    methods.traditional_model(data, dataset, repr_level, dir_load)
 
     # LSTM model
     regress = True #use this as True when you want to perform regression operations

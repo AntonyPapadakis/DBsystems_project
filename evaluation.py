@@ -40,31 +40,26 @@ if __name__ == '__main__':
         repr_level = "char"
 
     if X_test != "":
-        pathX= X_test
+        pathX = X_test
         X_test = load(X_test)  # load data
     if Y_test != "":
-        pathY= Y_test
+        pathY = Y_test
         Y_test = load(Y_test)  # load labels
-
 
     # now time for the evaluation protocol
     print(Y_test)
 
     if "Log" in model_path or "huber" in model_path:
 
-        model_type = repr_level + " traditional model "
-        print(model_path)
         model = joblib.load(model_path)
-        if "error" in model_path and "cnn" in pathX or "lstm" in pathX :
+        if "error" in model_path and "cnn" in pathX or "lstm" in pathX:
             Y_test = np.argmax(Y_test, axis=1)
-            X_test = X_test.reshape((len(X_test),len(X_test[0])))
+            X_test = X_test.reshape((len(X_test), len(X_test[0])))
 
         Y_pred = model.predict(X_test)
 
     else:
         from tensorflow import keras
-
-        model_type = repr_level + " neural net model "
 
         model = keras.models.load_model(model_path)
         Y_pred = model.predict(X_test)
@@ -72,27 +67,8 @@ if __name__ == '__main__':
             Y_pred = np.argmax(Y_pred, axis=1)
             Y_test = np.argmax(Y_test, axis=1)
 
-    print(Y_pred)
-    print(Y_test)
-
-    count1 = 0
-    count11 = 0
-
-    for i in range(0, len(Y_test)):
-        if Y_test[i] == -1:
-            count1 += 1
-        elif Y_test[i] == 1:
-            count11 += 1
-    print(count1)
-    print(count11)
-
     # classification evaluation
     if "error" in model_path:
-
-        if "sdss" in model_path:
-            model_type = model_type + " sdss error classification "
-        else:
-            model_type = model_type + " sqlshare error classification"
 
         if model_type != "":
             print("ok")
@@ -106,6 +82,10 @@ if __name__ == '__main__':
                 temp[i] = mfreq_error
             Y_pred = temp
 
+        if "sdss" in model_path:
+            model_type = model_type + " sdss error classification "
+        else:
+            model_type = model_type + " sqlshare error classification"
 
         print("Given model type is:", model_type, "\nmodel name: ", model_path)
 
@@ -123,22 +103,23 @@ if __name__ == '__main__':
         print(model_type, "- Missed values: ", missed)
 
     else:
+        if model_type != "":
+            print("ok")
+
+            # median value for regression problems
+            # CPU time busy problem
+            median_val = np.median(Y_test)
+            print("median cpu time: ", median_val, "\n")
+
+            temp = np.zeros(len(Y_test))
+            for i in range(len(temp)):
+                temp[i] = median_val
+            Y_pred = temp
 
         if "sdss" in model_path:
             model_type = model_type + " sdss regression"
         else:
             model_type = model_type + " sqlshare regression"
-            
-        if model_type !="":
-                # median value for regression problems
-                # CPU time busy problem
-                median_val = np.median(Y_test)
-                print("median cpu time: ", median_val, "\n")
-
-                temp = np.zeros(len(Y_test))
-                for i in range(len(temp)):
-                    temp[i] = median_val
-                Y_pred = temp
 
         print("Given model type is:", model_type, "\nmodel name: ", model_path)
 
@@ -151,7 +132,3 @@ if __name__ == '__main__':
         print(model_type, "- Explained Variance score: ", ev)
         print(model_type, "- Max Error score: ", me)
         print(model_type, "- R2 score: ", me)
-
-
-
-

@@ -71,6 +71,7 @@ if __name__ == '__main__':
     print("------------------------workload analysis begins-----------------------------------------")
     #workload_an = an.Analiser(data)
     #workload_an.analisis(data)
+    # finished analysis
     print("------------------------workload analysis finished-----------------------------------------")
 
 

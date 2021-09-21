@@ -68,8 +68,10 @@ if __name__ == '__main__':
 
 
     # query workload analysis
-    workload_an = an.Analiser(data)
-    workload_an.analisis(data)
+    print("------------------------workload analysis begins-----------------------------------------")
+    #workload_an = an.Analiser(data)
+    #workload_an.analisis(data)
+    print("------------------------workload analysis finished-----------------------------------------")
 
 
     if repr_level == "":

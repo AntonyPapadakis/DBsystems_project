@@ -228,11 +228,6 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
     if "no" in answer:
 
         V, V_counter, ngrams_per_query = bag_of_ngrams_Vocabulary(5, data, repr_level)
-
-        import pickle
-        open_file = open("vocabulary", "rb")
-        V = pickle.load(open_file)
-        open_file.close()
         u, total_tokens_in_vocabulary = bag_of_ngrams_get_vector(V, ngrams_per_query)
 
         # create a column made out of the representation vectors

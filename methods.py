@@ -77,7 +77,7 @@ def bag_of_ngrams_Vocabulary(n: int, data: pd.DataFrame, repr_level: str) -> (li
     result = []
     keep_ngrams_per_q = []
     for q in data.statement:
-        result, ngrams_from_each_q = ngrams_from_query(n, q, result, repr_level)
+        result, ngrams_from_each_q = ngrams_from_query(n, str(q), result, repr_level)
         keep_ngrams_per_q.append(ngrams_from_each_q)
 
     out = Counter(result)
@@ -193,15 +193,20 @@ def regression(b: float, values: np.array, dataset):
     """
 
     # went with an altered min max normalisation after all
+    np.where(values==-1,0,values)
     keep_values = values  # values before normalization
     np.add.at(values, [*range(0, len(values))], b)
-    values = np.divide(values, keep_values.max() - keep_values.min())
+    #values = np.divide(values, keep_values.max() - keep_values.min())
     # replace NaN values
     Y = np.nan_to_num(values, nan=0)
 
     # logarithmic transform
-    # if "sdss" in dataset:
-    #    Y = np.log(CPU_time)
+    if "sdss" in dataset:
+        Y = np.log(Y)
+    else:
+        values = np.divide(values, keep_values.max() - keep_values.min())
+        Y = np.nan_to_num(values, nan=0)
+
     return Y
 
 
@@ -232,7 +237,7 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 
         # create a column made out of the representation vectors
         representation_vector = pd.Series(u)
-        data.insert(5, "representation_vector", representation_vector.values)
+        data.insert(2, "representation_vector", representation_vector.values)
 
         # get the training feature vectors
         X = calculate_TFIDF(data, V, total_tokens_in_vocabulary)
@@ -331,21 +336,32 @@ def traditional_model(data: pd.DataFrame, dataset: str, repr_level: str, dir_loa
 def preprocess_for_neural_net_models(data: pd.DataFrame, X_train: np.array, token_level: str) -> (np.array, np.array):
     Y_error = data.error.values
 
+    if -1 in Y_error:
+        Y_error = np.where(Y_error == -1, 2, Y_error)  # give value 2 to -1 errors
+
     if "success" in Y_error[:]:  # aka when we have loaded the sqlshare dataset
         Y_error = np.where(Y_error == "success", 1, 0)
 
     max_words = 3000
     if "word" in token_level:
+
         for i in range(0, X_train.shape[0]):
+            if not isinstance(X_train[i], str):
+                X_train[i] = str(X_train[i])
+
             X_train[i] = X_train[i].lower()
             # regular expression to replace all digits with <d> token but not alphanumerics
             X_train[i] = re.sub(r'\b[0-9]+\b|\s', ' <d> ', X_train[i])
 
-        phrase_len = data.statement.apply(lambda p: len(p.split(' ')))
+        phrase_len = data.statement.apply(lambda p: len(str(p).split(' ')))
     else:
         for i in range(0, X_train.shape[0]):
+            if not isinstance(X_train[i], str):
+                X_train[i] = str(X_train[i])
+
             X_train[i] = X_train[i].lower()
-        phrase_len = data.statement.apply(lambda p: len(p))
+
+        phrase_len = data.statement.apply(lambda p: len(str(p)))
 
     max_phrase_len = phrase_len.max()
 

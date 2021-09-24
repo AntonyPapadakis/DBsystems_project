@@ -3,7 +3,7 @@ import numpy as np
 from numpy import save, load
 import joblib
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, explained_variance_score, \
-    mean_squared_error, max_error
+    mean_squared_error, max_error, mean_absolute_error
 from sklearn.metrics import r2_score
 
 if __name__ == '__main__':
@@ -71,7 +71,6 @@ if __name__ == '__main__':
     if "error" in model_path:
 
         if model_type != "":
-            print("ok")
             unique_elements, counts_elements = np.unique(Y_test, return_counts=True)
             mfreq_index = np.where(counts_elements.max() == counts_elements)  # most frequent
             mfreq_error = unique_elements[mfreq_index][0]
@@ -126,9 +125,16 @@ if __name__ == '__main__':
         ev = explained_variance_score(Y_test, Y_pred)
         mse = mean_squared_error(Y_test, Y_pred)
         me = max_error(Y_test, Y_pred)
-        r2 = r2_score(Y_test, Y_pred)
+        mae =  mean_absolute_error(Y_test, Y_pred)
+
+        dif = np.abs(Y_test - Y_pred)
+        std = np.std(dif,axis=0)
+        mstd = np.mean(std)
+        print("- mean Standard deviation of prediction error: ", mstd)
+
+
 
         print(model_type, "- Mean Squared Error score: ", mse)
         print(model_type, "- Explained Variance score: ", ev)
         print(model_type, "- Max Error score: ", me)
-        print(model_type, "- R2 score: ", me)
+        print(model_type, "- Mean Abs Error: ", mae)

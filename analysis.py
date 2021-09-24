@@ -87,16 +87,21 @@ class Analiser(pd.DataFrame):
         # -------------------------------------------------------
         # tokens = parser.tokenize(query)
 
-    def analisis(self, data):
+    def analisis(self, data,ret_flag: bool):
 
         rows, cols = data.shape
         num_of_chars, num_of_words, num_of_joins, r_subqueries, r_num_of_function_calls, r_number_of_unique_table_names, r_number_of_predicates, r_number_of_predicate_table_names, r_number_of_selected_columns, r_nested_aggregation = ( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        print("------------workload analysis started----------------")
 
         for r in range(0, rows):
             #print(r)
             # q = "SELECT * FROM students WHERE GPA > (SELECT AVG(GPA) FROM students WHERE AGE < (SELECT MAX(AGE) FROM students) );"
-            q = data.statement[r]
-            #print(q)
+
+            try:
+                q = data.statement[r]
+            except KeyError:
+                continue
+
             check = self.analise_all(q)
             if check is not None: # not queries message will be printed
                 a, b, c, d, e, f, g, h, i, j = check
@@ -114,6 +119,7 @@ class Analiser(pd.DataFrame):
             r_number_of_selected_columns += i
             r_nested_aggregation += j
 
+
         # print analisis results
         print("num of chars: ", num_of_chars, "\nnum of words: ", num_of_words,
               "\nnum of function calls",
@@ -123,6 +129,12 @@ class Analiser(pd.DataFrame):
               "\nnum of predicates: ", r_number_of_predicates, "\nnumber of predicate table names: ",
               r_number_of_predicate_table_names,
               "\nnumber of subqueries: ", r_subqueries, "\nnested aggregation: ", r_nested_aggregation,flush=True)
+
+        print("------------workload analysis finished----------------")
+
+        if ret_flag == True:
+            return num_of_chars, num_of_words, num_of_joins, r_subqueries, r_num_of_function_calls, r_number_of_unique_table_names, r_number_of_predicates, r_number_of_predicate_table_names, r_number_of_selected_columns, r_nested_aggregation
+
 
     def analise_all(self, q, parent=True):
         """
@@ -134,9 +146,10 @@ class Analiser(pd.DataFrame):
 
         """
         global num_of_function_calls, sub_count
-
+        q= str(q)
         if q is not None:
             parser = sqlparser.Parser(vendor=0)
+
             ch = parser.check_syntax(q)
         else:
             return
@@ -287,5 +300,5 @@ class Analiser(pd.DataFrame):
 
                     return num_of_chars, num_of_words, num_of_joins, r_subqueries, r_num_of_function_calls,r_number_of_unique_table_names,r_number_of_predicates, r_number_of_predicate_table_names,r_number_of_selected_columns, r_nested_aggregation
 
-        else:
-            print("There is no query in this entry\n")
+        #else:
+        #    #print("There is no query in this entry\n")

@@ -17,7 +17,7 @@ def read_SQL_share():
 
 def readSDSS():
     # used the dollar sign to denote the query statement due to confusion with the quotation marks
-    data = pd.read_csv("SDSS_100K_d.csv", delimiter=',', engine='python', encoding='latin1', quotechar="$",
+    data = pd.read_csv("SDSS_100K_d_mix.csv", delimiter=',', engine='python', encoding='latin1', quotechar="$",
                        error_bad_lines=False)
     return data
 
@@ -68,11 +68,9 @@ if __name__ == '__main__':
 
 
     # query workload analysis
-    print("------------------------workload analysis begins-----------------------------------------")
-    #workload_an = an.Analiser(data)
-    #workload_an.analisis(data)
+    workload_an = an.Analiser(data)
+    workload_an.analisis(data, False)
     # finished analysis
-    print("------------------------workload analysis finished-----------------------------------------")
 
 
     if repr_level == "":
@@ -95,7 +93,6 @@ if __name__ == '__main__':
 
     print("dataset: ", dataset, "\nfile containing the representation TFIDF vectors: ", dir_load,
           "\nRepresentation level", repr_level)
-
 
 
     # simple baselines

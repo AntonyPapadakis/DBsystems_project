@@ -4,7 +4,7 @@ This project was developed in the course of the Data Science and Infromation Tec
 
 ## Datasets
 
-For the experiments conducted in this project we used two large scale query workloads. The first one is comprised of 100000 queries extracted through the casjobs of the SDSS dataset and the second one being the SQLShare released query workload.
+For the experiments conducted in this project we used two large scale query workloads. The first one is comprised of around 56700 queries extracted through the casjobs of the SDSS dataset and the second one being the SQLShare released query workload.
 
 ## Important note
 

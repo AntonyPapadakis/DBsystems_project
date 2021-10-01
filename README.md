@@ -16,13 +16,14 @@ When trying to run main in order to reproduce exactly our experiments please not
 
 main.py supports arguments: 
 
+```
 main.py -r [representation level for models char or word] -d [dataset_filepath] -f [file with representation vectors for traditional approach]
-
+```
 all arguments are optional.
 
 If you have already trained your model and have stored your train and test data you may use the evaluation.py script as:
-
+```
 evaluation.py -x [X_test data filename] -y [Y_test data filename] -f [path for trained model] -t [OPTIONAL - input any string and a baseline model will be calculated]
-
+```
 Evaluation.py calculates a number of metrics for each of the problems, classification or regression.
 
